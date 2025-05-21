@@ -70,20 +70,42 @@ The SPI Monitoring Driver will be an independent kernel module, not altering exi
 
 ### 3.1 Functional Requirements
 - **FR1**: The system shall capture all incoming and outgoing SPI transactions at the kernel level.
-- **FR2**: The system shall log the timestamp, device node, and data payload of each SPI transaction.
-- **FR3**: The system shall allow enabling/disabling monitoring dynamically via ioctl or procfs/sysfs interface.
+- **FR2**: The system shall log the timestamp, device node, and data payload of each SPI transaction to `/data/log/spi_monitor.log` or expose it via `/proc/spi_monitor_log`.
+- **FR3**: The system shall allow enabling/disabling SPI monitoring dynamically via `/sys/kernel/spi_monitor/enable`, where `echo 1 > enable` starts and `echo 0 > enable` stops monitoring.
 - **FR4**: The system shall generate periodic reports summarizing SPI usage and anomalies.
 - **FR5**: *[Optional]* The system shall support monitoring additional interfaces (e.g., I2C, UART).
 
 ### 3.2 Non-Functional Requirements
 - **NFR1**: The system shall not interfere with the normal functioning of SPI communication.
-- **NFR2**: Testable via stress/fuzz testing. Good.
 
 ### 3.3 Interface Requirements
-- **UIR1**: The system shall allow user-space tools to query logs or configure settings.
+- **UIR1**: The system shall allow user-space tools to query logs or configure settings via `/proc/spi_monitor_log` or sysfs interface.
 
 ## 4. Appendices
 
-- **Appendix A**: System Architecture Diagram (can be added later)
-- **Appendix B**: Example Monitoring Output Format
-- **Appendix C**: Threat Model (if desired)
+### Appendix A: System Architecture Diagram
+(To be added later.)
+
+### Appendix B: Example Monitoring Output Format
+```
+[1716583201] /dev/spidev1.0 TX: A1 B2 C3 RX: 00 FF EE
+```
+
+### Appendix C: Threat Model
+(To be added if security assessment is done.)
+
+### Appendix D: Testing Strategy
+
+#### D.1 Fuzzing Test
+- **Target Interfaces**: `/proc/spi_monitor_log`, `/sys/kernel/spi_monitor/enable`, and ioctl
+- **Tools**: `syzkaller`, `AFL`, custom ioctl fuzzer
+- **Goal**: Detect kernel crashes, buffer overflows, race conditions
+
+#### D.2 Stress Test
+- **Method**:
+  - Generate >1000 SPI transactions/sec using test scripts
+  - Force maximum log size over 100MB
+- **Metrics**:
+  - CPU usage
+  - Kernel logs (dmesg)
+  - Log accuracy and loss
